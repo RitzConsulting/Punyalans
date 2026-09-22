@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Punyalans Tactical Plan</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        html{height:100%;overflow:hidden;}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:white;height:100%;overflow:hidden;}
+        
+        /* LOGIN PROTECTION SCREEN */
+        .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;}
+        .login-screen.hidden{display:none;}
+        .login-box{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:20px;padding:40px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+        .login-logo{font-size:4rem;margin-bottom:10px;}
+        .login-title{font-size:1.8rem;font-weight:bold;margin-bottom:5px;background:linear-gradient(135deg,#ffd54f,#ff9800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .login-subtitle{font-size:.9rem;opacity:.6;margin-bottom:30px;}
+        .login-question{font-size:1.1rem;margin-bottom:20px;line-height:1.5;color:#ffd54f;}
+        .login-input{width:100%;padding:14px 20px;border-radius:30px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:white;font-size:1.1rem;text-align:center;outline:none;transition:all .3s;}
+        .login-input:focus{border-color:#ffd54f;background:rgba(255,215,79,.1);}
+        .login-input::placeholder{color:rgba(255,255,255,.3);}
+        .login-btn{width:100%;padding:14px;border:none;border-radius:30px;background:linear-gradient(135deg,#4CAF50,#2e7d32);color:white;font-size:1.1rem;font-weight:bold;cursor:pointer;margin-top:15px;transition:all .3s;}
+        .login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(76,175,80,.4);}
+        .login-error{color:#ff6b6b;font-size:.9rem;margin-top:15px;opacity:0;transition:opacity .3s;}
+        .login-error.show{opacity:1;}
+        .login-hint{font-size:.8rem;opacity:.4;margin-top:20px;}
+        .login-attempts{font-size:.75rem;opacity:.3;margin-top:10px;}
+        
+        .main-layout{display:flex;height:100%;overflow:hidden;}
+
+        /* FIELD */
+        .field-panel{flex:1;display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden;}
+        .top-bar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:5px 8px;background:rgba(0,0,0,.2);flex-shrink:0;}
+        .top-bar h1{font-size:1.25rem;}
+        .formation-toggle{display:flex;gap:4px;}
+        .fbtn{padding:5px 11px;border:none;border-radius:14px;font-size:10px;font-weight:bold;cursor:pointer;transition:all .3s;text-transform:uppercase;}
+        .fbtn.wa{background:linear-gradient(135deg,#2196F3,#1565c0);color:white;}
+        .fbtn.wi{background:linear-gradient(135deg,#9C27B0,#6a1b9a);color:white;}
+        .fbtn.active{box-shadow:0 0 10px currentColor;transform:scale(1.05);}
+        .controls-row{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;padding:3px 8px;background:rgba(0,0,0,.12);flex-shrink:0;}
+        .btn{padding:5px 10px;border:none;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer;transition:all .3s;text-transform:uppercase;}
+        .btn-d{background:linear-gradient(135deg,#2196F3,#1565c0);color:white;}
+        .btn-a{background:linear-gradient(135deg,#F44336,#c62828);color:white;}
+        .btn-p{background:linear-gradient(135deg,#ffd54f,#ff9800);color:#333;}
+        .btn-s{background:linear-gradient(135deg,#4CAF50,#2e7d32);color:white;}
+        .btn:hover{transform:translateY(-1px);}
+        .btn.active{box-shadow:0 0 8px currentColor;}
+        .mbadge{padding:3px 10px;border-radius:10px;font-weight:bold;font-size:.7rem;}
+        .md{background:#2196F3;}.ma{background:#F44336;}
+
+        .field-area{flex:1;position:relative;overflow:hidden;min-height:0;}
+        .fc{position:absolute;inset:3px;background:#2d5a27;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+        .ff{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#2d5a27 0px,#2d5a27 10%,#3d6a37 10%,#3d6a37 20%);border:3px solid white;}
+        .fi{position:absolute;inset:0;}
+        .cl{position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.7);transform:translateX(-50%);}
+        .cc{position:absolute;left:50%;top:50%;width:13%;aspect-ratio:1;border:2px solid rgba(255,255,255,.7);border-radius:50%;transform:translate(-50%,-50%);}
+        .cd{position:absolute;left:50%;top:50%;width:6px;height:6px;background:white;border-radius:50%;transform:translate(-50%,-50%);}
+        .pal{position:absolute;left:0;top:25%;width:10%;height:50%;border:2px solid rgba(255,255,255,.7);border-left:none;}
+        .par{position:absolute;right:0;top:25%;width:10%;height:50%;border:2px solid rgba(255,255,255,.7);border-right:none;}
+        .gl{position:absolute;left:-6px;top:40%;width:6px;height:20%;background:white;border-radius:3px 0 0 3px;}
+        .gr{position:absolute;right:-6px;top:40%;width:6px;height:20%;background:white;border-radius:0 3px 3px 0;}
+
+        .player{position:absolute;width:76px;height:76px;transform:translate(-50%,-50%);transition:all .6s ease-in-out;z-index:10;cursor:pointer;}
+        .player.hidden{opacity:0;transform:translate(-50%,-50%) scale(0);pointer-events:none;}
+        .pc{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,.4);transition:transform .3s;}
+        .player:hover .pc{transform:scale(1.1);}
+        .pn{font-size:13px;font-weight:bold;color:white;text-shadow:1px 1px 3px rgba(0,0,0,.9);}
+        .pp{font-size:10px;color:rgba(255,255,255,.9);font-weight:bold;}
+        .ps{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:#ffd54f;white-space:nowrap;text-shadow:1px 1px 2px rgba(0,0,0,.8);font-weight:bold;}
+        .gk{background:linear-gradient(135deg,#43a047,#2e7d32);}
+        .def{background:linear-gradient(135deg,#1e88e5,#1565c0);}
+        .mid{background:linear-gradient(135deg,#ff9800,#f57c00);}
+        .fwd{background:linear-gradient(135deg,#e53935,#c62828);}
+        .ch{position:absolute;top:-5px;right:-5px;background:#ffd54f;color:#333;width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;animation:pu 2s infinite;}
+        @keyframes pu{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+        .ball{position:absolute;width:14px;height:14px;background:radial-gradient(circle at 30% 30%,white,#ddd);border-radius:50%;transform:translate(-50%,-50%);z-index:15;box-shadow:2px 2px 4px rgba(0,0,0,.4);transition:all .4s;opacity:0;}
+        .ball.visible{opacity:1;}
+        .pass-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:20;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:bold;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap;max-width:90%;letter-spacing:.5px;}
+        .pass-label.visible{opacity:1;}
+        .pass-label.ubt{background:linear-gradient(135deg,rgba(255,213,79,.9),rgba(255,152,0,.9));color:#333;}
+        .pass-label.tl{background:linear-gradient(135deg,rgba(33,150,243,.9),rgba(21,101,192,.9));color:white;}
+        .pass-label.pb{background:linear-gradient(135deg,rgba(76,175,80,.9),rgba(46,125,50,.9));color:white;}
+        .pass-label.sw{background:linear-gradient(135deg,rgba(156,39,176,.9),rgba(106,27,154,.9));color:white;}
+        .pass-label.ov{background:linear-gradient(135deg,rgba(244,67,54,.9),rgba(198,40,40,.9));color:white;}
+        .psl{position:absolute;height:3px;background:linear-gradient(90deg,#ffd54f,#ffeb3b);transform-origin:left center;z-index:5;opacity:0;border-radius:2px;box-shadow:0 0 8px #ffd54f;}
+        .psl.active{animation:pa .6s ease-out forwards;}
+        @keyframes pa{0%{opacity:0;width:0}50%{opacity:1}100%{opacity:0;width:100%}}
+        .player.so{animation:so .4s ease-in forwards;}
+        .player.si{animation:si .4s ease-out forwards;}
+        @keyframes so{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-100%) scale(.5)}}
+        @keyframes si{0%{opacity:0;transform:translate(-50%,0%) scale(.5)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+        .squad-strip{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;padding:3px 6px;font-size:8px;background:rgba(0,0,0,.2);flex-shrink:0;}
+        .squad-strip span{padding:2px 5px;border-radius:6px;}
+        .sg{background:rgba(67,160,71,.3);}.sd{background:rgba(30,136,229,.3);}.sm{background:rgba(255,152,0,.3);}.sf{background:rgba(229,57,53,.3);}.so2{background:rgba(158,158,158,.2);color:#9e9e9e;font-style:italic;}
+
+        /* RIGHT SIDE: CHAT + MVP stacked */
+        .right-panel{width:300px;display:flex;flex-direction:column;height:100%;flex-shrink:0;border-left:1px solid rgba(255,255,255,.08);}
+
+        /* MVP PANEL */
+        .mvp-panel{height:220px;background:rgba(255,215,79,.03);border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;flex-shrink:0;}
+        .mvp-header{padding:8px 10px;background:linear-gradient(135deg,rgba(255,215,79,.12),rgba(255,152,0,.08));font-weight:bold;font-size:14px;text-align:center;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;}
+        .mvp-refresh{padding:4px 10px;border:none;border-radius:10px;background:rgba(255,255,255,.1);color:#ffd54f;font-size:11px;cursor:pointer;font-weight:bold;}
+        .mvp-refresh:hover{background:rgba(255,255,255,.2);}
+        .mvp-content{flex:1;overflow-y:auto;padding:6px 8px;}
+        .mvp-empty{text-align:center;padding:20px 10px;font-size:13px;opacity:.5;line-height:1.5;}
+        .mvp-card{display:flex;gap:8px;padding:7px 8px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:5px;align-items:flex-start;border-left:3px solid #ffd54f;}
+        .mvp-rank{font-size:18px;font-weight:bold;min-width:24px;text-align:center;line-height:1;}
+        .mvp-rank.gold{color:#ffd54f;}.mvp-rank.silver{color:#bdbdbd;}.mvp-rank.bronze{color:#ff8a65;}
+        .mvp-info{flex:1;min-width:0;}
+        .mvp-name{font-size:12px;font-weight:bold;color:#ffd54f;}
+        .mvp-comment{font-size:11px;opacity:.8;line-height:1.3;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+        .mvp-stars{font-size:12px;color:#ffd54f;white-space:nowrap;min-width:60px;text-align:right;}
+        .mvp-loading{text-align:center;padding:20px;font-size:12px;opacity:.5;}
+
+        /* CHAT */
+        .chat-panel{flex:1;display:flex;flex-direction:column;min-height:0;background:rgba(255,255,255,.02);}
+        .chat-header{padding:7px 10px;background:rgba(255,255,255,.05);font-weight:bold;font-size:13px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+        .chat-tabs{display:flex;flex-shrink:0;}
+        .ctab{flex:1;padding:6px;text-align:center;font-size:12px;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent;transition:all .3s;background:rgba(255,255,255,.02);}
+        .ctab.active{border-bottom-color:#ffd54f;color:#ffd54f;background:rgba(255,215,79,.06);}
+        .chat-name{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:4px;align-items:center;flex-shrink:0;}
+        .chat-name label{font-size:12px;opacity:.6;}
+        .chat-name input{flex:1;padding:5px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:white;font-size:13px;outline:none;}
+        .db-banner{display:none;padding:6px 10px;background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.2);border-radius:6px;margin:4px 6px;font-size:10px;line-height:1.4;flex-shrink:0;}
+        .db-banner.show{display:block;}
+        .db-banner a{color:#ffd54f;}
+        .msgs{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px;min-height:0;}
+        .msg{padding:8px 10px;border-radius:8px;font-size:14px;line-height:1.4;max-width:94%;}
+        .msg.system{background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.12);align-self:flex-start;}
+        .msg.user{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.12);align-self:flex-end;}
+        .msg .ma2{font-weight:bold;font-size:10px;margin-bottom:2px;opacity:.6;}
+        .msg .mt{font-size:9px;opacity:.35;text-align:right;margin-top:2px;}
+        .msgs.hid{display:none;}
+        .sview{display:none;flex:1;overflow-y:auto;padding:8px;flex-direction:column;gap:6px;}
+        .sview.active{display:flex;}
+        .scard{padding:10px;background:rgba(156,39,176,.08);border:1px solid rgba(156,39,176,.15);border-radius:8px;font-size:13px;line-height:1.5;}
+        .scard h4{color:#ce93d8;margin-bottom:6px;font-size:14px;}
+        .scard ul{margin-left:14px;margin-bottom:6px;}
+        .scard li{margin-bottom:3px;}
+        .sbar{padding:6px 8px;border-top:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+        .btn-sum{width:100%;padding:7px;border:none;border-radius:10px;font-size:11px;font-weight:bold;cursor:pointer;background:linear-gradient(135deg,#9C27B0,#6a1b9a);color:white;}
+        .btn-sum:hover{box-shadow:0 3px 10px rgba(156,39,176,.3);}
+        .btn-sum:disabled{opacity:.5;cursor:not-allowed;}
+        .cinput{padding:6px 8px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:4px;flex-shrink:0;}
+        .cinput input{flex:1;padding:7px 10px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:white;font-size:14px;outline:none;}
+        .cinput input::placeholder{color:rgba(255,255,255,.3);}
+        .csend{padding:7px 12px;border-radius:16px;border:none;background:#4CAF50;color:white;font-size:12px;cursor:pointer;font-weight:bold;}
+
+        /* MODAL */
+        .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;justify-content:center;align-items:center;padding:12px;}
+        .mo.active{display:flex;}
+        .modal{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.15);}
+        .mh{padding:16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08);}
+        .mh .pi{width:68px;height:68px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:28px;border:4px solid white;}
+        .mh h2{font-size:1.5rem;margin-bottom:3px;}
+        .mh .pb{display:inline-block;padding:4px 14px;border-radius:10px;font-size:13px;font-weight:bold;}
+        .mb{padding:16px;}
+        .gs{margin-bottom:12px;}
+        .gs h3{font-size:15px;color:#ffd54f;margin-bottom:6px;}
+        .gs ul{list-style:none;padding:0;}
+        .gs li{padding:8px 10px;background:rgba(255,255,255,.04);border-radius:5px;margin-bottom:4px;font-size:14px;line-height:1.4;border-left:4px solid;}
+        .gs li.md2{border-color:#4CAF50;}.gs li.mn{border-color:#F44336;}.gs li.tp{border-color:#2196F3;}
+        .mc{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.1);border:none;color:white;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;}
+        .swi{text-align:center;padding:8px;background:rgba(255,215,0,.06);border-radius:6px;margin-top:10px;font-size:13px;color:#ffd54f;}
+
+        @media(max-width:768px){
+            .main-layout{flex-direction:column;}
+            .right-panel{width:100%;flex-direction:row;height:auto;max-height:50vh;border-left:none;border-top:1px solid rgba(255,255,255,.08);}
+            .mvp-panel{height:auto;max-height:180px;width:50%;border-bottom:none;border-right:1px solid rgba(255,255,255,.08);}
+            .chat-panel{width:50%;}
+            .field-panel{flex:1;min-height:0;}
+            .player{width:50px;height:50px;}
+            .pn{font-size:9px;}.pp{font-size:7px;}.ps{font-size:6px;bottom:-11px;}
+            .ch{width:14px;height:14px;font-size:7px;}
+        }
+    </style>
+</head>
+<body>
+<!-- LOGIN PROTECTION SCREEN -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo">⚽</div>
+        <div class="login-title">PUNYALANS</div>
+        <div class="login-subtitle">Team Tactical Hub</div>
+        <div class="login-question">🤔 Trivia Question:<br><strong>What is our team called? (one word)</strong></div>
+        <input type="text" class="login-input" id="loginAnswer" placeholder="Enter answer..." autocomplete="off" onkeydown="if(event.key==='Enter')checkAnswer()">
+        <button class="login-btn" onclick="checkAnswer()">🔓 Enter</button>
+        <div class="login-error" id="loginError">❌ Wrong answer! Try again.</div>
+        <div class="login-hint">💡 Hint: Ask a teammate if you don't know!</div>
+        <div class="login-attempts" id="loginAttempts"></div>
+    </div>
+</div>
+
+<div class="main-layout" id="mainContent" style="display:none;">
+    <div class="field-panel">
+        <div class="top-bar">
+            <h1>⚽ PUNYALANS</h1>
+            <div class="formation-toggle">
+                <button class="fbtn wa active" onclick="setFormation('wa')">3-2-1</button>
+                <button class="fbtn wi" onclick="setFormation('wi')">2-3-1</button>
+            </div>
+        </div>
+        <div class="controls-row">
+            <button class="btn btn-d active" onclick="setDef()">🛡️ Def</button>
+            <button class="btn btn-a" onclick="setAtt()">⚔️ Att</button>
+            <button class="btn btn-p" id="passBtn" onclick="cyclePass()">📍 Pass ▶</button>
+            <button class="btn btn-s" onclick="showSub()">🔄 Rotate</button>
+            <span class="mbadge md" id="mi">DEFENSIVE</span>
+        </div>
+        <div class="field-area">
+            <div class="fc"><div class="ff"><div class="fi">
+                <div class="cl"></div><div class="cc"></div><div class="cd"></div>
+                <div class="pal"></div><div class="par"></div><div class="gl"></div><div class="gr"></div>
+                <div class="ball" id="ball"></div><div id="pls"></div>
+                <div class="pass-label" id="passLabel"></div>
+                <div class="player" id="gk" style="left:8%;top:50%" onclick="sg('gk')"><div class="ch">?</div><div class="pc gk"><span class="pn">Anumodh</span><span class="pp">GK</span></div><span class="ps">↔ Sijo</span></div>
+                <div class="player" id="cb" style="left:18%;top:50%" onclick="sg('cb')"><div class="ch">?</div><div class="pc def"><span class="pn">Sujith R</span><span class="pp">CB</span></div><span class="ps">↔ Sujith Joseph</span></div>
+                <div class="player" id="lb" style="left:20%;top:22%" onclick="sg('lb')"><div class="ch">?</div><div class="pc def"><span class="pn">Arun</span><span class="pp">LB</span></div><span class="ps">↔ Rinto</span></div>
+                <div class="player" id="rb" style="left:20%;top:78%" onclick="sg('rb')"><div class="ch">?</div><div class="pc def"><span class="pn">Ajeeb</span><span class="pp">RB</span></div><span class="ps">↔ Sijo</span></div>
+                <div class="player" id="lm" style="left:45%;top:30%" onclick="sg('lm')"><div class="ch">?</div><div class="pc mid"><span class="pn">Praveen</span><span class="pp">LM</span></div><span class="ps">↔ Rinto</span></div>
+                <div class="player hidden" id="cm" style="left:42%;top:50%" onclick="sg('cm')"><div class="ch">?</div><div class="pc mid"><span class="pn">Rithesh</span><span class="pp">CM</span></div><span class="ps">↔ Praveen</span></div>
+                <div class="player" id="rm" style="left:45%;top:70%" onclick="sg('rm')"><div class="ch">?</div><div class="pc mid"><span class="pn">Rithesh</span><span class="pp">RM</span></div><span class="ps">↔ Ajeeb</span></div>
+                <div class="player" id="st" style="left:72%;top:50%" onclick="sg('st')"><div class="ch">?</div><div class="pc fwd"><span class="pn">Ebin</span><span class="pp">ST</span></div><span class="ps">↔ Jojan</span></div>
+            </div></div></div>
+        </div>
+        <div class="squad-strip">
+            <span class="sg">Anumodh</span><span class="sg">Sijo*</span>
+            <span class="sd">Arun</span><span class="sd">Sujith R</span><span class="sd">Ajeeb</span><span class="sd">Rinto</span><span class="sd">Sujith Joseph</span><span class="sd">Sijo</span>
+            <span class="sm">Praveen</span><span class="sm">Rithesh</span><span class="sm">Rinto</span><span class="sm">Ajeeb</span>
+            <span class="sf">Ebin</span><span class="sf">Jojan</span>
+        </div>
+    </div>
+
+    <!-- RIGHT: MVP + CHAT -->
+    <div class="right-panel">
+        <!-- MVP LEADERBOARD -->
+        <div class="mvp-panel">
+            <div class="mvp-header">
+                <span>⭐ MVP Feedback Board</span>
+                <button class="mvp-refresh" id="mvpBtn" onclick="rateFeedback()">🤖 Rate</button>
+            </div>
+            <div class="mvp-content" id="mvpContent">
+                <div class="mvp-empty">💬 Team comments will be rated here<br><br>Post feedback in chat, then hit <strong>🤖 Rate</strong> to see stars!</div>
+            </div>
+        </div>
+
+        <!-- CHAT -->
+        <div class="chat-panel">
+            <div class="chat-header">💬 Team Chat</div>
+            <div class="chat-tabs">
+                <div class="ctab active" id="t1" onclick="stab('chat')">💬 Chat</div>
+                <div class="ctab" id="t2" onclick="stab('sum')">🤖 Summary</div>
+            </div>
+            <div class="chat-name"><label>Name:</label><input type="text" id="cn" placeholder="Your name"></div>
+            <div class="db-banner" id="dbb">⚠️ Chat not connected. <a href="#" onclick="setupGuide();return false;">Setup Firebase</a> to persist messages.</div>
+            <div class="msgs" id="msgs"></div>
+            <div class="sview" id="sv"></div>
+            <div class="sbar"><button class="btn-sum" id="bs" onclick="summarize()">🤖 Summarize & Suggest</button></div>
+            <div class="cinput">
+                <input type="text" id="ci" placeholder="Type feedback..." onkeydown="if(event.key==='Enter')send()">
+                <button class="csend" onclick="send()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mov" onclick="cm(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <button class="mc" onclick="cm()">&times;</button>
+        <div class="mh" id="mhd"></div>
+        <div class="mb" id="mbd"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ===== LOGIN PROTECTION =====
+// SHA-256 hash of "punyalans" (lowercase) - the answer is case-insensitive.
+// NOTE: light obfuscation only. This repo is public, so anyone can read the
+// source and the hash. Do not treat it as real security.
+const ANSWER_HASH = '54c09c89a2826904d359b81b2e0bdde51c826eb514b9c7b1e4f6c3f2bb481eb0';
+let loginAttempts = 0;
+
+// SHA-256 hash function
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Check if already authenticated (stored in sessionStorage)
+function checkAuth() {
+    if (sessionStorage.getItem('punyalans_auth') === 'true') {
+        unlockPage();
+    }
+}
+
+// Verify answer
+async function checkAnswer() {
+    const input = document.getElementById('loginAnswer');
+    const answer = input.value.trim().toLowerCase();
+    const errorEl = document.getElementById('loginError');
+    const attemptsEl = document.getElementById('loginAttempts');
+
+    if (!answer) {
+        errorEl.textContent = '❌ Please enter an answer!';
+        errorEl.classList.add('show');
+        return;
+    }
+
+    const hash = await sha256(answer);
+    loginAttempts++;
+
+    if (hash === ANSWER_HASH) {
+        // Correct! Store auth and unlock
+        sessionStorage.setItem('punyalans_auth', 'true');
+        errorEl.classList.remove('show');
+        document.getElementById('loginScreen').style.transition = 'opacity 0.5s';
+        document.getElementById('loginScreen').style.opacity = '0';
+        setTimeout(unlockPage, 500);
+    } else {
+        // Wrong answer
+        errorEl.textContent = '❌ Wrong answer! Try again.';
+        errorEl.classList.add('show');
+        attemptsEl.textContent = `Attempts: ${loginAttempts}`;
+        input.value = '';
+        input.focus();
+        // Shake animation
+        const box = document.querySelector('.login-box');
+        box.style.animation = 'none';
+        setTimeout(() => { box.style.animation = 'shake 0.4s'; }, 10);
+    }
+}
+
+function unlockPage() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainContent').style.display = 'flex';
+    initApp();
+}
+
+// Run auth check on load
+checkAuth();
+
+// ===== MAIN APP =====
+let cF='wa',cM='defensive',cR=0,fbReady=false,db=null,allMsgs=[];
+
+// ===== FIREBASE =====
+// PASTE YOUR FIREBASE CONFIG HERE (see the "Setup Firebase" guide in the chat panel).
+// Left blank on purpose: this repo is public, so no project credentials are checked in.
+// Until it is filled, chat still works but is local to your browser session only.
+const fbCfg={
+    apiKey:"",
+    authDomain:"",
+    databaseURL:"",
+    projectId:"",
+    storageBucket:"",
+    messagingSenderId:"",
+    appId:""
+};
+const CHAT_PATH='punyalans/chat/messages';
+function initFB(){try{if(fbCfg.apiKey){firebase.initializeApp(fbCfg);db=firebase.database();fbReady=true;listenMsgs();document.getElementById('dbb').classList.remove('show');}else{document.getElementById('dbb').classList.add('show');}}catch(e){document.getElementById('dbb').classList.add('show');}}
+function listenMsgs(){if(!fbReady)return;db.ref(CHAT_PATH).orderByChild('timestamp').on('value',snap=>{allMsgs=[];const c=document.getElementById('msgs');c.innerHTML='';PINS.forEach(m=>c.appendChild(mkMsg(m.a,m.t,m.tm,'system')));snap.forEach(ch=>{const m=ch.val();allMsgs.push(m);c.appendChild(mkMsg(m.author,m.text,m.time,'user'));});scr();});}
+async function saveFB(a,t,tm){if(!fbReady)return;try{await db.ref(CHAT_PATH).push({author:a,text:t,time:tm,timestamp:Date.now()});}catch(e){}}
+
+// ===== CHAT =====
+const PINS=[
+    {a:'Ritz',t:'Welcome to Punyalans! Share feedback on formations & positions. Click players for the role guide.',tm:'Pinned'},
+    {a:'Ritz',t:'🛡️ Priority: DEFENSIVE & PASS-ORIENTED. Compact, simple passes, defend as a unit.',tm:'Pinned'},
+    {a:'Ritz',t:'🔄 Two shapes: 3-2-1 (three at the back) and 2-3-1 (extra man in midfield). 3 rotations each.',tm:'Pinned'},
+    {a:'Ritz',t:'⚠️ FITNESS: 8:45 PM sharp. Work on fitness daily 💪',tm:'Pinned'}
+];
+let localMsgs=[];
+function loadLocal(){const c=document.getElementById('msgs');c.innerHTML='';PINS.forEach(m=>c.appendChild(mkMsg(m.a,m.t,m.tm,'system')));localMsgs.forEach(m=>c.appendChild(mkMsg(m.author,m.text,m.time,'user')));scr();}
+function mkMsg(a,t,tm,tp){const e=document.createElement('div');e.className=`msg ${tp}`;e.innerHTML=`<div class="ma2">${a}</div><div>${t}</div><div class="mt">${tm}</div>`;return e;}
+function scr(){const c=document.getElementById('msgs');c.scrollTop=c.scrollHeight;}
+async function send(){const i=document.getElementById('ci'),n=document.getElementById('cn').value||'Player';if(!i.value.trim())return;const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'}),t=i.value.trim();if(fbReady){await saveFB(n,t,tm);}else{localMsgs.push({author:n,text:t,time:tm});allMsgs.push({author:n,text:t,time:tm});document.getElementById('msgs').appendChild(mkMsg(n,t,tm,'user'));scr();}i.value='';}
+
+// ===== TABS =====
+function stab(v){document.getElementById('t1').classList.toggle('active',v==='chat');document.getElementById('t2').classList.toggle('active',v==='sum');document.getElementById('msgs').classList.toggle('hid',v!=='chat');document.getElementById('sv').classList.toggle('active',v==='sum');}
+
+// ===== MVP RATING =====
+async function rateFeedback(){
+    const btn=document.getElementById('mvpBtn');btn.disabled=true;btn.textContent='⏳...';
+    const mc=document.getElementById('mvpContent');
+    if(allMsgs.length===0){mc.innerHTML='<div class="mvp-empty">No feedback yet! Post in chat first.</div>';btn.disabled=false;btn.textContent='🤖 Rate';return;}
+    const msgs=allMsgs.map((m,i)=>`${i+1}. ${m.author}: ${m.text}`).join('\n');
+    try{
+        const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`You are rating team feedback for the Punyalans 7-a-side football team. Rate each comment 1-5 stars based on: tactical insight, constructiveness, helpfulness to the team. Return ONLY a JSON array, no other text, no markdown. Format: [{"index":1,"author":"Name","comment":"short excerpt max 40 chars","stars":4,"reason":"brief 10 word reason"}]. Sort by stars descending (best first). Here are the comments:\n${msgs}`}]})});
+        const d=await r.json();
+        const txt=d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+        const rated=JSON.parse(txt);
+        renderMVP(rated);
+    }catch(e){
+        mc.innerHTML='<div class="mvp-empty">⚠️ Rating needs an API proxy.<br>Comments are still saved in chat!</div>';
+    }
+    btn.disabled=false;btn.textContent='🤖 Rate';
+}
+function renderMVP(rated){
+    const mc=document.getElementById('mvpContent');
+    if(!rated||rated.length===0){mc.innerHTML='<div class="mvp-empty">No ratings yet.</div>';return;}
+    mc.innerHTML=rated.map((r,i)=>{
+        const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+        const stars='⭐'.repeat(r.stars||0);
+        return `<div class="mvp-row ${i===0?'top':''}"><div class="mvp-rank">${medal}</div><div class="mvp-info"><div class="mvp-name">${r.author}</div><div class="mvp-comment">${r.comment}</div><div class="mvp-reason">${r.reason||''}</div></div><div class="mvp-stars">${stars}</div></div>`;
+    }).join('');
+}
+
+// ===== SUMMARY =====
+async function summarize(){
+    const b=document.getElementById('bs');b.disabled=true;b.textContent='⏳ Analyzing...';
+    const sv=document.getElementById('sv');stab('sum');
+    if(allMsgs.length===0){sv.innerHTML='<p style="opacity:.6">No feedback yet. Post messages first!</p>';b.disabled=false;b.textContent='🤖 Summarize & Suggest';return;}
+    const msgs=allMsgs.map(m=>`${m.author}: ${m.text}`).join('\n');
+    try{
+        const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`You are the tactical analyst for the Punyalans 7-a-side football team. Analyze feedback:\n1. SUMMARY: Key points\n2. POSITION SUGGESTIONS: Adjustments worth considering\n3. TACTICAL ALTERNATIVES: 1-2 alternatives keeping defensive priority\n4. ACTION ITEMS: Quick wins\n\nCurrent shapes: 3-2-1 and 2-3-1. Primary XI: GK-Anumodh, LB-Arun, CB-Sujith R, RB-Ajeeb, LM-Praveen, RM-Rithesh, ST-Ebin. Bench: Sijo (GK/DEF), Rinto (DEF/MID), Sujith Joseph (DEF), Ajeeb (MID cover), Jojan (FWD).\n\nFeedback:\n${msgs}`}]})});
+        const d=await r.json();
+        sv.innerHTML=d.content.map(i=>i.text||'').join('').replace(/\n/g,'<br>');
+    }catch(e){
+        sv.innerHTML='<p style="opacity:.6">⚠️ Summary needs an API proxy. Read the comments in the chat tab!</p>';
+    }
+    b.disabled=false;b.textContent='🤖 Summarize & Suggest';
+}
+
+function setupGuide(){document.getElementById('mhd').innerHTML=`<div class="pi" style="background:#ff9800">🔥</div><h2>Setup Firebase (Free)</h2><span class="pb" style="background:#ff9800">5 minutes</span>`;document.getElementById('mbd').innerHTML=`<div class="gs"><h3>Step 1: Create Project</h3><ul><li class="tp">Go to <strong>console.firebase.google.com</strong></li><li class="tp">Create project → name <strong>"punyalans"</strong></li><li class="tp">Skip analytics → Create</li></ul></div><div class="gs"><h3>Step 2: Create Database</h3><ul><li class="tp"><strong>Build → Realtime Database → Create</strong></li><li class="tp">Choose location → <strong>"Test mode"</strong></li></ul></div><div class="gs"><h3>Step 3: Get Config</h3><ul><li class="tp">⚙️ Project Settings → Your apps → <strong>Web (&lt;/&gt;)</strong></li><li class="tp">Register → copy <strong>firebaseConfig</strong></li></ul></div><div class="gs"><h3>Step 4: Paste & Upload</h3><ul><li class="tp">Open index.html → find <strong>"PASTE YOUR FIREBASE CONFIG"</strong></li><li class="tp">Replace with your config → push to GitHub</li></ul></div><div class="gs"><h3>⚠️ This repo is public</h3><ul><li class="tp">Anyone can read a config you commit here</li><li class="tp">Lock the database rules down before you go live</li></ul></div>`;document.getElementById('mov').classList.add('active');}
+
+// ===== PLAYER GUIDES =====
+const G={
+    gk:{n:'Goalkeeper',i:'🧤',c:'#43a047',p:'Anumodh',s:'Sijo',md:['Command the box - be vocal, organize the defense','Communicate constantly with the back line','Distribute accurately to the defenders','Stay on your line, be patient','Start attacks with smart, safe passes'],mn:["Don't play long hopeful balls","Don't leave your line unless necessary","Don't hold the ball too long"],tp:['First pass: CB or the wide defenders','Your voice is your biggest weapon','Anticipate danger']},
+    cb:{n:'Center Back',i:'🛡️',c:'#1e88e5',p:'Sujith R',s:'Sujith Joseph',md:['Be the anchor - stay central','Win headers and aerial duels',"Be strong - don't let attackers turn",'Pass to the midfield two or the wide defenders','Cover for LB/RB pushing up'],mn:["Don't dive in - stay on your feet","Don't push too high","Don't dribble into trouble"],tp:['Last line before the GK - be calm','Organize the back line','When in doubt, clear it']},
+    lb:{n:'Left Back',i:'⬅️',c:'#1e88e5',p:'Arun',s:'Rinto',md:['Be physical - win your 1v1 duels','Stay deep, protect your side','Pass to LM - your main outlet','Cover the left flank, track wingers','Communicate with CB and LM'],mn:["Don't push too far in defensive mode","Don't let attackers get behind you","Don't play risky back passes"],tp:['Attack: overlap with LM','CB slides across if you go forward','Win the headers on your side']},
+    rb:{n:'Right Back',i:'➡️',c:'#1e88e5',p:'Ajeeb',s:'Sijo',md:['Be physical - win your 1v1 duels','Stay deep, protect your side','Pass to RM - your main outlet','Cover the right flank, track wingers','Communicate with CB and RM'],mn:["Don't push too far in defensive mode","Don't let attackers get behind you","Don't play risky back passes"],tp:['Attack: overlap with RM','CB slides across if you go forward','Win the headers on your side']},
+    lm:{n:'Left Mid',i:'🏃',c:'#ff9800',p:'Praveen',s:'Rinto',md:['Defense first - track back','Be flexible - find space','Accurate passes','Triangles with LB and RM','Attack: go wide and high'],mn:["Don't stay too high without the ball","Don't lose the ball in danger zones","Don't ignore your defensive duties"],tp:['Always be available for a pass','Show for LB or make space','Make runs behind the defenders']},
+    cm:{n:'Central Mid',i:'⚙️',c:'#ff9800',p:'Rithesh',s:'Praveen',md:['Be the engine - link defense to attack','Find space, always be available','Through balls to the striker','Press when we lose the ball','Keep the ball moving - simple'],mn:["Don't force difficult passes","Don't hold the ball too long","Don't disappear"],tp:['Only on the pitch in the 2-3-1','You connect everyone - be the glue','In doubt? Play back to a defender']},
+    rm:{n:'Right Mid',i:'🏃',c:'#ff9800',p:'Rithesh',s:'Ajeeb',md:['Defense first - track back','Be flexible - find space','Accurate passes','Triangles with RB and LM','Attack: go wide and high'],mn:["Don't stay too high without the ball","Don't lose the ball in danger zones","Don't ignore your defensive duties"],tp:['Always be available for a pass','Show for RB or make space','Make runs behind the defenders']},
+    st:{n:'Striker',i:'⚽',c:'#e53935',p:'Ebin',s:'Jojan',md:['Run into the gaps behind defenders','Take your shots - be confident','Press defenders - start our defense!','Hold the ball up, wait for support','Be the target for through passes'],mn:["Don't drop too deep","Don't stop moving","Don't chase lost causes"],tp:['Press: cut the passing lanes','Make life hard for their defenders','Celebrate every goal! 🎉']}
+};
+function sg(pos){const g=G[pos];if(!g)return;document.getElementById('mhd').innerHTML=`<div class="pi" style="background:${g.c}">${g.i}</div><h2>${g.n}</h2><span class="pb" style="background:${g.c}">${pos.toUpperCase()}</span>`;document.getElementById('mbd').innerHTML=`<div class="gs"><h3>✅ MUST DO</h3><ul>${g.md.map(i=>`<li class="md2">✅ ${i}</li>`).join('')}</ul></div><div class="gs"><h3>❌ MUST NOT</h3><ul>${g.mn.map(i=>`<li class="mn">❌ ${i}</li>`).join('')}</ul></div><div class="gs"><h3>💡 TIPS</h3><ul>${g.tp.map(i=>`<li class="tp">💡 ${i}</li>`).join('')}</ul></div><div class="swi"><strong>Primary:</strong> ${g.p} | <strong>Swap:</strong> ${g.s}</div>`;document.getElementById('mov').classList.add('active');}
+function cm(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('mov').classList.remove('active');}
+
+// ===== POSITIONS =====
+// P0 = 3-2-1 (back three, midfield two, lone striker). CM sits out.
+const P0={d:{gk:{left:'8%',top:'50%'},cb:{left:'18%',top:'50%'},lb:{left:'20%',top:'22%'},rb:{left:'20%',top:'78%'},lm:{left:'45%',top:'30%'},rm:{left:'45%',top:'70%'},st:{left:'72%',top:'50%'}},a:{gk:{left:'8%',top:'50%'},cb:{left:'26%',top:'50%'},lb:{left:'34%',top:'18%'},rb:{left:'34%',top:'82%'},lm:{left:'62%',top:'25%'},rm:{left:'62%',top:'75%'},st:{left:'86%',top:'50%'}}};
+// P1 = 2-3-1 (two wide defenders, midfield three, lone striker). CB sits out.
+const P1={d:{gk:{left:'8%',top:'50%'},lb:{left:'20%',top:'28%'},rb:{left:'20%',top:'72%'},lm:{left:'45%',top:'20%'},cm:{left:'40%',top:'50%'},rm:{left:'45%',top:'80%'},st:{left:'72%',top:'50%'}},a:{gk:{left:'8%',top:'50%'},lb:{left:'32%',top:'20%'},rb:{left:'32%',top:'80%'},lm:{left:'66%',top:'15%'},cm:{left:'58%',top:'50%'},rm:{left:'66%',top:'85%'},st:{left:'88%',top:'50%'}}};
+
+// ===== TACTICAL PASSING PATTERNS =====
+// Each pattern: name, css class, description, steps (per formation)
+// Step types: 'pass' = ball moves, 'move' = player moves (off-ball run), 'label' = show text
+const PATTERNS = {
+wa: [ // 3-2-1 patterns (back three: LB, CB, RB)
+    { name:'⬆️ Up-Back-Through (Left)', cls:'ubt', desc:'Build from the back: UP to LM, BACK to LB, THROUGH to ST',
+      steps:[
+        {type:'label',text:'UP-BACK-THROUGH (Left)'},
+        {type:'pass',f:'gk',t:'cb',spd:300},
+        {type:'pass',f:'cb',t:'lm',spd:300,label:'UP ⬆️'},
+        {type:'move',id:'lb',to:{left:'34%',top:'20%'},spd:500},
+        {type:'pass',f:'lm',t:'lb',spd:300,label:'BACK ⬇️'},
+        {type:'move',id:'lm',to:{left:'58%',top:'20%'},spd:400},
+        {type:'pass',f:'lb',t:'lm',spd:350,label:'THROUGH ➡️'},
+        {type:'move',id:'st',to:{left:'80%',top:'40%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'FINISH 🎯'},
+    ]},
+    { name:'⬆️ Up-Back-Through (Right)', cls:'ubt', desc:'Build from the back: UP to RM, BACK to RB, THROUGH to ST',
+      steps:[
+        {type:'label',text:'UP-BACK-THROUGH (Right)'},
+        {type:'pass',f:'gk',t:'cb',spd:300},
+        {type:'pass',f:'cb',t:'rm',spd:300,label:'UP ⬆️'},
+        {type:'move',id:'rb',to:{left:'34%',top:'80%'},spd:500},
+        {type:'pass',f:'rm',t:'rb',spd:300,label:'BACK ⬇️'},
+        {type:'move',id:'rm',to:{left:'58%',top:'80%'},spd:400},
+        {type:'pass',f:'rb',t:'rm',spd:350,label:'THROUGH ➡️'},
+        {type:'move',id:'st',to:{left:'80%',top:'60%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'FINISH 🎯'},
+    ]},
+    { name:'🔀 Through the Lines (Central)', cls:'tl', desc:'CB steps out, splits the press, midfield two feed the striker',
+      steps:[
+        {type:'label',text:'THROUGH THE LINES (Central)'},
+        {type:'pass',f:'gk',t:'lb',spd:300},
+        {type:'pass',f:'lb',t:'cb',spd:300,label:'Line 1 broken ✂️'},
+        {type:'move',id:'lm',to:{left:'42%',top:'40%'},spd:400},
+        {type:'pass',f:'cb',t:'lm',spd:350,label:'Line 2 broken ✂️'},
+        {type:'move',id:'st',to:{left:'68%',top:'45%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'Line 3 broken ✂️'},
+        {type:'move',id:'rm',to:{left:'66%',top:'70%'},spd:400},
+        {type:'pass',f:'st',t:'rm',spd:300,label:'LAY OFF / SHOOT 🎯'},
+    ]},
+    { name:'↔️ Switch Play', cls:'sw', desc:'CB is the pivot - move the ball side to side until a gap opens',
+      steps:[
+        {type:'label',text:'SWITCH PLAY'},
+        {type:'pass',f:'gk',t:'lb',spd:300},
+        {type:'move',id:'lm',to:{left:'45%',top:'22%'},spd:400},
+        {type:'pass',f:'lb',t:'lm',spd:350,label:'Left side'},
+        {type:'pass',f:'lm',t:'cb',spd:350,label:'No space ✋'},
+        {type:'pass',f:'cb',t:'rb',spd:350,label:'SWITCH! ↔️'},
+        {type:'move',id:'rm',to:{left:'56%',top:'80%'},spd:400},
+        {type:'pass',f:'rb',t:'rm',spd:350,label:'Space found! ✅'},
+        {type:'move',id:'st',to:{left:'80%',top:'62%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'CROSS 🎯'},
+    ]},
+    { name:'🏃 Overlap Run', cls:'ov', desc:'LB overlaps the left mid for a 2v1 on the flank',
+      steps:[
+        {type:'label',text:'OVERLAP RUN'},
+        {type:'pass',f:'cb',t:'lb',spd:300},
+        {type:'pass',f:'lb',t:'lm',spd:300},
+        {type:'move',id:'lb',to:{left:'48%',top:'12%'},spd:600,label:'LB overlaps! 🏃'},
+        {type:'pass',f:'lm',t:'rm',spd:300},
+        {type:'pass',f:'rm',t:'lb',spd:350,label:'Find the overlap ➡️'},
+        {type:'move',id:'st',to:{left:'80%',top:'45%'},spd:400},
+        {type:'move',id:'rm',to:{left:'70%',top:'60%'},spd:400},
+        {type:'pass',f:'lb',t:'st',spd:350,label:'CROSS 🎯'},
+    ]},
+    { name:'↩️ Pullback & Reset', cls:'pb', desc:'Attack stalls - recycle through the CB and go the other way',
+      steps:[
+        {type:'label',text:'PULLBACK & RESET'},
+        {type:'pass',f:'lb',t:'lm',spd:300},
+        {type:'move',id:'lm',to:{left:'55%',top:'25%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'Blocked! ✋'},
+        {type:'pass',f:'st',t:'lm',spd:300,label:'PULL BACK ↩️'},
+        {type:'pass',f:'lm',t:'cb',spd:350,label:'RESET 🔄'},
+        {type:'move',id:'rm',to:{left:'52%',top:'76%'},spd:400},
+        {type:'pass',f:'cb',t:'rm',spd:350,label:'SWITCH ↔️'},
+        {type:'move',id:'st',to:{left:'78%',top:'66%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'GO! 🎯'},
+    ]}
+],
+wi: [ // 2-3-1 patterns (CM is the extra man in midfield)
+    { name:'⬆️ Up-Back-Through (Left)', cls:'ubt', desc:'Build from the back: UP to CM, BACK to LB, THROUGH to LM → ST',
+      steps:[
+        {type:'label',text:'UP-BACK-THROUGH (Left)'},
+        {type:'pass',f:'gk',t:'lb',spd:300},
+        {type:'pass',f:'lb',t:'cm',spd:300,label:'UP ⬆️'},
+        {type:'move',id:'lb',to:{left:'32%',top:'20%'},spd:500},
+        {type:'pass',f:'cm',t:'lb',spd:300,label:'BACK ⬇️'},
+        {type:'move',id:'lm',to:{left:'60%',top:'16%'},spd:400},
+        {type:'pass',f:'lb',t:'lm',spd:350,label:'THROUGH ➡️'},
+        {type:'move',id:'st',to:{left:'82%',top:'40%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'FINISH 🎯'},
+    ]},
+    { name:'⬆️ Up-Back-Through (Right)', cls:'ubt', desc:'Build from the back: UP to CM, BACK to RB, THROUGH to RM → ST',
+      steps:[
+        {type:'label',text:'UP-BACK-THROUGH (Right)'},
+        {type:'pass',f:'gk',t:'rb',spd:300},
+        {type:'pass',f:'rb',t:'cm',spd:300,label:'UP ⬆️'},
+        {type:'move',id:'rb',to:{left:'32%',top:'80%'},spd:500},
+        {type:'pass',f:'cm',t:'rb',spd:300,label:'BACK ⬇️'},
+        {type:'move',id:'rm',to:{left:'60%',top:'84%'},spd:400},
+        {type:'pass',f:'rb',t:'rm',spd:350,label:'THROUGH ➡️'},
+        {type:'move',id:'st',to:{left:'82%',top:'60%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'FINISH 🎯'},
+    ]},
+    { name:'🔀 Through the Lines (Central)', cls:'tl', desc:'CM is the pivot - break each line with one pass',
+      steps:[
+        {type:'label',text:'THROUGH THE LINES (Central)'},
+        {type:'pass',f:'gk',t:'lb',spd:300},
+        {type:'pass',f:'lb',t:'cm',spd:300,label:'Line 1 broken ✂️'},
+        {type:'move',id:'lm',to:{left:'56%',top:'30%'},spd:400},
+        {type:'pass',f:'cm',t:'lm',spd:350,label:'Line 2 broken ✂️'},
+        {type:'move',id:'st',to:{left:'74%',top:'42%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'Line 3 broken ✂️'},
+        {type:'move',id:'rm',to:{left:'70%',top:'70%'},spd:400},
+        {type:'pass',f:'st',t:'rm',spd:300,label:'CROSS/SHOOT 🎯'},
+    ]},
+    { name:'↩️ Pullback & Support', cls:'pb', desc:'Attack, get stopped, pull back to CM, switch the point of attack',
+      steps:[
+        {type:'label',text:'PULLBACK & SUPPORT'},
+        {type:'pass',f:'lb',t:'cm',spd:300},
+        {type:'pass',f:'cm',t:'lm',spd:300},
+        {type:'move',id:'lm',to:{left:'56%',top:'22%'},spd:400},
+        {type:'pass',f:'lm',t:'st',spd:300,label:'Blocked! ✋'},
+        {type:'pass',f:'st',t:'cm',spd:350,label:'PULL BACK ↩️'},
+        {type:'move',id:'rm',to:{left:'54%',top:'78%'},spd:400},
+        {type:'pass',f:'cm',t:'rm',spd:350,label:'SWITCH ↔️'},
+        {type:'move',id:'st',to:{left:'78%',top:'66%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'GO! 🎯'},
+    ]},
+    { name:'↔️ Switch Play', cls:'sw', desc:'Move the ball side to side to stretch them, then attack the gap',
+      steps:[
+        {type:'label',text:'SWITCH PLAY'},
+        {type:'pass',f:'gk',t:'lb',spd:300},
+        {type:'pass',f:'lb',t:'cm',spd:300},
+        {type:'move',id:'lm',to:{left:'45%',top:'18%'},spd:400},
+        {type:'pass',f:'cm',t:'lm',spd:350,label:'Left side'},
+        {type:'pass',f:'lm',t:'cm',spd:350,label:'No space ✋'},
+        {type:'pass',f:'cm',t:'rb',spd:350,label:'SWITCH! ↔️'},
+        {type:'move',id:'rm',to:{left:'56%',top:'84%'},spd:400},
+        {type:'pass',f:'rb',t:'rm',spd:350,label:'Space found! ✅'},
+        {type:'move',id:'st',to:{left:'80%',top:'62%'},spd:400},
+        {type:'pass',f:'rm',t:'st',spd:300,label:'CROSS 🎯'},
+    ]},
+    { name:'🏃 Overlap Run', cls:'ov', desc:'RB overlaps the right mid, creates a 2v1 on the flank',
+      steps:[
+        {type:'label',text:'OVERLAP RUN'},
+        {type:'pass',f:'cm',t:'rb',spd:300},
+        {type:'pass',f:'rb',t:'rm',spd:300},
+        {type:'move',id:'rb',to:{left:'48%',top:'88%'},spd:600,label:'RB overlaps! 🏃'},
+        {type:'pass',f:'rm',t:'cm',spd:300},
+        {type:'pass',f:'cm',t:'rb',spd:350,label:'Find the overlap ➡️'},
+        {type:'move',id:'st',to:{left:'80%',top:'58%'},spd:400},
+        {type:'move',id:'lm',to:{left:'70%',top:'45%'},spd:400},
+        {type:'pass',f:'rb',t:'st',spd:350,label:'CROSS 🎯'},
+    ]}
+]};
+
+let curPattern=0, passRunning=false;
+// Save original positions to restore after animation
+function savePositions(){
+    const saved={};
+    document.querySelectorAll('.player').forEach(p=>{saved[p.id]={left:p.style.left,top:p.style.top};});
+    return saved;
+}
+function restorePositions(saved){
+    Object.keys(saved).forEach(id=>{const p=document.getElementById(id);if(p){p.style.left=saved[id].left;p.style.top=saved[id].top;}});
+}
+
+async function cyclePass(){
+    if(passRunning)return;
+    passRunning=true;
+    const btn=document.getElementById('passBtn');
+    const pats=PATTERNS[cF];
+    const pat=pats[curPattern];
+    btn.textContent=`📍 ${pat.name}`;
+    btn.classList.add('active');
+    const saved=savePositions();
+    const b=document.getElementById('ball');
+    const c=document.getElementById('pls');
+    const lbl=document.getElementById('passLabel');
+    c.innerHTML='';
+    b.classList.add('visible');
+    // Show pattern label
+    lbl.className='pass-label '+pat.cls+' visible';
+    lbl.textContent=pat.name;
+    for(let i=0;i<pat.steps.length;i++){
+        const step=pat.steps[i];
+        if(step.type==='label'){
+            lbl.textContent=step.text;
+        } else if(step.type==='pass'){
+            const fp=document.getElementById(step.f),tp=document.getElementById(step.t);
+            if(!fp||!tp||fp.classList.contains('hidden')||tp.classList.contains('hidden'))continue;
+            if(step.label)lbl.textContent=step.label;
+            // Move ball
+            b.style.left=fp.style.left;b.style.top=fp.style.top;
+            await sl(120);
+            // Draw pass line
+            const from=gC(step.f),to=gC(step.t);
+            const l=document.createElement('div');l.className='psl';
+            l.style.left=`${from.x}px`;l.style.top=`${from.y}px`;
+            const dx=to.x-from.x,dy=to.y-from.y;
+            l.style.width=`${Math.sqrt(dx*dx+dy*dy)}px`;
+            l.style.transform=`rotate(${Math.atan2(dy,dx)*180/Math.PI}deg)`;
+            c.appendChild(l);l.classList.add('active');
+            b.style.left=tp.style.left;b.style.top=tp.style.top;
+            await sl(step.spd||350);
+        } else if(step.type==='move'){
+            // Off-ball player movement
+            const p=document.getElementById(step.id);
+            if(p&&!p.classList.contains('hidden')){
+                if(step.label)lbl.textContent=step.label;
+                p.style.left=step.to.left;p.style.top=step.to.top;
+            }
+            await sl(step.spd||400);
+        }
+    }
+    // Hold final position
+    await sl(1200);
+    // Cleanup
+    b.classList.remove('visible');
+    lbl.classList.remove('visible');
+    c.innerHTML='';
+    // Restore all player positions
+    restorePositions(saved);
+    // Advance to next pattern
+    curPattern=(curPattern+1)%pats.length;
+    btn.textContent=`📍 Pass ▶ (${curPattern+1}/${pats.length})`;
+    btn.classList.remove('active');
+    passRunning=false;
+}
+
+// ===== ROTATIONS =====
+// Squad: Anumodh, Sijo (GK) | Arun, Sujith R, Ajeeb (DEF) + Rinto, Sujith Joseph,
+// Sijo (DEF backups) | Praveen, Rithesh (MID) + Rinto, Ajeeb (MID backups) |
+// Ebin (FWD) + Jojan (FWD backup). Every rotation fields 7 distinct players.
+const R0=[
+    {gk:{n:'Anumodh',s:'Sijo'},cb:{n:'Sujith R',s:'Sujith Joseph'},lb:{n:'Arun',s:'Rinto'},rb:{n:'Ajeeb',s:'Sijo'},lm:{n:'Praveen',s:'Rinto'},rm:{n:'Rithesh',s:'Ajeeb'},st:{n:'Ebin',s:'Jojan'}},
+    {gk:{n:'Sijo',s:'Anumodh'},cb:{n:'Sujith Joseph',s:'Sujith R'},lb:{n:'Rinto',s:'Arun'},rb:{n:'Ajeeb',s:'Arun'},lm:{n:'Praveen',s:'Rinto'},rm:{n:'Rithesh',s:'Ajeeb'},st:{n:'Jojan',s:'Ebin'}},
+    {gk:{n:'Anumodh',s:'Sijo'},cb:{n:'Sujith R',s:'Sujith Joseph'},lb:{n:'Arun',s:'Rinto'},rb:{n:'Sijo',s:'Ajeeb'},lm:{n:'Rinto',s:'Praveen'},rm:{n:'Ajeeb',s:'Rithesh'},st:{n:'Ebin',s:'Jojan'}}
+];
+// R1 = 2-3-1. Same squad, one defender pushes into the midfield three.
+const R1=[
+    {gk:{n:'Anumodh',s:'Sijo'},lb:{n:'Arun',s:'Rinto'},rb:{n:'Ajeeb',s:'Sijo'},lm:{n:'Praveen',s:'Rinto'},cm:{n:'Rithesh',s:'Sujith R'},rm:{n:'Sujith R',s:'Ajeeb'},st:{n:'Ebin',s:'Jojan'}},
+    {gk:{n:'Sijo',s:'Anumodh'},lb:{n:'Rinto',s:'Arun'},rb:{n:'Sujith Joseph',s:'Ajeeb'},lm:{n:'Praveen',s:'Rinto'},cm:{n:'Rithesh',s:'Arun'},rm:{n:'Ajeeb',s:'Sujith R'},st:{n:'Jojan',s:'Ebin'}},
+    {gk:{n:'Anumodh',s:'Sijo'},lb:{n:'Sujith R',s:'Arun'},rb:{n:'Arun',s:'Ajeeb'},lm:{n:'Rinto',s:'Praveen'},cm:{n:'Praveen',s:'Rithesh'},rm:{n:'Rithesh',s:'Ajeeb'},st:{n:'Ebin',s:'Jojan'}}
+];
+const ROT_NAMES=['Primary XI','Rotation A (backups)','Rotation B (mixed)'];
+
+function uN(r){Object.keys(r).forEach(id=>{const p=document.getElementById(id);if(p){p.querySelector('.pn').textContent=r[id].n;p.querySelector('.ps').textContent=`↔ ${r[id].s}`;}});}
+function gP(){return cF==='wa'?P0:P1;}
+function setDef(){cM='defensive';mv(gP().d);document.getElementById('mi').textContent='DEFENSIVE';document.getElementById('mi').className='mbadge md';uB('d');}
+function setAtt(){cM='attack';mv(gP().a);document.getElementById('mi').textContent='ATTACK';document.getElementById('mi').className='mbadge ma';uB('a');}
+function mv(c){Object.keys(c).forEach(id=>{const p=document.getElementById(id);if(p&&!p.classList.contains('hidden')){p.style.left=c[id].left;p.style.top=c[id].top;}});}
+function uB(m){document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));document.querySelector(m==='d'?'.btn-d':'.btn-a').classList.add('active');}
+function gC(id){const p=document.getElementById(id),f=document.querySelector('.fi'),r=f.getBoundingClientRect();return{x:(parseFloat(p.style.left)/100)*r.width,y:(parseFloat(p.style.top)/100)*r.height};}
+
+function showSub(){const r=cF==='wa'?R0:R1;cR=(cR+1)%r.length;const rot=r[cR];Object.keys(rot).forEach(id=>{const p=document.getElementById(id);if(!p||p.classList.contains('hidden'))return;p.classList.add('so');setTimeout(()=>{p.querySelector('.pn').textContent=rot[id].n;p.querySelector('.ps').textContent=`↔ ${rot[id].s}`;p.classList.remove('so');p.classList.add('si');setTimeout(()=>p.classList.remove('si'),400);},400);});document.getElementById('mi').textContent=ROT_NAMES[cR];}
+function sl(ms){return new Promise(r=>setTimeout(r,ms));}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cm();});
+
+// Swap shape: 3-2-1 plays the CB and drops the CM, 2-3-1 does the reverse.
+function setFormation(f){
+    cF=f;cR=0;curPattern=0;
+    document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.fbtn.${f}`).classList.add('active');
+    const cbEl=document.getElementById('cb'),cmEl=document.getElementById('cm');
+    if(f==='wa'){cbEl.classList.remove('hidden');cmEl.classList.add('hidden');}
+    else{cbEl.classList.add('hidden');cmEl.classList.remove('hidden');}
+    uN((f==='wa'?R0:R1)[0]);
+    cM==='defensive'?setDef():setAtt();
+    document.getElementById('passBtn').textContent='📍 Pass ▶';
+}
+
+// Initialize app after login
+function initApp(){
+    initFB();
+    if(!fbReady)loadLocal();
+    setFormation('wa');
+    setDef();
+}
+</script>
+</body>
+</html>
