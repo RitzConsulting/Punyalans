@@ -50,7 +50,8 @@ Each shape has three rotations (Primary XI, backups, mixed), cycled with the
   builds, so you can see where everyone went. To change the pace, edit
   `PASS_SPEED` in `index.html` — higher is slower, `1` is the original speed.
 - **Click any player** — role guide: must do, must not, tips, and who swaps in.
-- **Team Chat** — post feedback on the shape. Starts empty.
+- **Team Chat** — shared across the whole team. Put your name in the box once
+  (it is remembered) and post; everyone else sees it live, on any device.
 
 ## Running it
 
@@ -65,16 +66,44 @@ python -m http.server 8000
 
 Settings → Pages → Source: *Deploy from a branch* → Branch `main`, folder `/ (root)`.
 
-## Team chat (optional)
+## Team chat
 
-Chat works out of the box but is **local to your browser session** — messages
-disappear on reload. To make them persist for everyone, create your own Firebase
-Realtime Database and paste the config into `index.html` (search for
-`PASTE YOUR FIREBASE CONFIG`). The in-app **Setup Firebase** link walks through it.
+Messages are shared. They live in a Firebase Realtime Database
+(`punyalans-chat`), so what one person types appears for everyone, on any device,
+and survives a reload. Nobody needs an account or a login — type a name and post.
 
-No Firebase credentials are committed here, because this repository is public.
-If you add a config, lock the database rules down first — the default "test mode"
-rules let anyone on the internet read and write your chat.
+GitHub Pages serves static files and has no server of its own, so a shared chat
+has to live somewhere that accepts writes. That is all the database is for.
+
+### Why the keys are in the source
+
+The values in `fbCfg` are not secrets. Every Firebase web app ships them in
+public JavaScript; they identify the project, they do not grant access. Access is
+decided by `firebase-rules.json`, which is deployed on the database itself:
+
+- anyone may **read** the chat, and **append** a message;
+- nobody may **edit or delete** one, not even the person who wrote it;
+- a message must have an author, text, a time and a timestamp, and nothing else;
+- author is capped at 40 characters, text at 500;
+- everything outside `punyalans/chat/messages` is unreachable — no reading the
+  database root, no writing anywhere else.
+
+Since anyone who finds the page can post, treat the chat as public. It is for
+talking about the shape, not for anything private.
+
+### Editing the rules
+
+`firebase-rules.json` is the source of truth. To change it:
+
+```sh
+curl -X PUT "https://punyalans-chat-default-rtdb.firebaseio.com/.settings/rules.json"   -H "Authorization: Bearer $(gcloud auth print-access-token)"   --data-binary @firebase-rules.json
+```
+
+Deleting a message needs owner rights, which the rules deliberately do not grant
+to the page — do it from the Firebase console, or with an access token.
+
+If the database is ever unreachable the page says so and keeps your messages on
+your own device for that session.
 
 ## A note on the login screen
 

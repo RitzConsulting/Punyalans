@@ -103,9 +103,6 @@
         /* CHAT */
         .chat-panel{flex:1;display:flex;flex-direction:column;min-height:0;background:rgba(255,255,255,.02);}
         .chat-header{padding:7px 10px;background:rgba(255,255,255,.05);font-weight:bold;font-size:13px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;}
-        .chat-tabs{display:flex;flex-shrink:0;}
-        .ctab{flex:1;padding:6px;text-align:center;font-size:12px;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent;transition:all .3s;background:rgba(255,255,255,.02);}
-        .ctab.active{border-bottom-color:#ffd54f;color:#ffd54f;background:rgba(255,215,79,.06);}
         .chat-name{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:4px;align-items:center;flex-shrink:0;}
         .chat-name label{font-size:12px;opacity:.6;}
         .chat-name input{flex:1;padding:5px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:white;font-size:13px;outline:none;}
@@ -119,17 +116,10 @@
         .msg.user{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.12);align-self:flex-end;}
         .msg .ma2{font-weight:bold;font-size:10px;margin-bottom:2px;opacity:.6;}
         .msg .mt{font-size:9px;opacity:.35;text-align:right;margin-top:2px;}
-        .msgs.hid{display:none;}
-        .sview{display:none;flex:1;overflow-y:auto;padding:8px;flex-direction:column;gap:6px;}
-        .sview.active{display:flex;}
         .scard{padding:10px;background:rgba(156,39,176,.08);border:1px solid rgba(156,39,176,.15);border-radius:8px;font-size:13px;line-height:1.5;}
         .scard h4{color:#ce93d8;margin-bottom:6px;font-size:14px;}
         .scard ul{margin-left:14px;margin-bottom:6px;}
         .scard li{margin-bottom:3px;}
-        .sbar{padding:6px 8px;border-top:1px solid rgba(255,255,255,.05);flex-shrink:0;}
-        .btn-sum{width:100%;padding:7px;border:none;border-radius:10px;font-size:11px;font-weight:bold;cursor:pointer;background:linear-gradient(135deg,#9C27B0,#6a1b9a);color:white;}
-        .btn-sum:hover{box-shadow:0 3px 10px rgba(156,39,176,.3);}
-        .btn-sum:disabled{opacity:.5;cursor:not-allowed;}
         .cinput{padding:6px 8px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:4px;flex-shrink:0;}
         .cinput input{flex:1;padding:7px 10px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:white;font-size:14px;outline:none;}
         .cinput input::placeholder{color:rgba(255,255,255,.3);}
@@ -224,17 +214,11 @@
         <!-- CHAT -->
         <div class="chat-panel">
             <div class="chat-header">💬 Team Chat</div>
-            <div class="chat-tabs">
-                <div class="ctab active" id="t1" onclick="stab('chat')">💬 Chat</div>
-                <div class="ctab" id="t2" onclick="stab('sum')">🤖 Summary</div>
-            </div>
-            <div class="chat-name"><label>Name:</label><input type="text" id="cn" placeholder="Your name"></div>
-            <div class="db-banner" id="dbb">⚠️ Chat not connected. <a href="#" onclick="setupGuide();return false;">Setup Firebase</a> to persist messages.</div>
+            <div class="chat-name"><label>Name:</label><input type="text" id="cn" placeholder="Your name" maxlength="40" oninput="rememberName()"></div>
+            <div class="db-banner" id="dbb">⚠️ Chat is offline — anything you post stays on this device.</div>
             <div class="msgs" id="msgs"></div>
-            <div class="sview" id="sv"></div>
-            <div class="sbar"><button class="btn-sum" id="bs" onclick="summarize()">🤖 Summarize & Suggest</button></div>
             <div class="cinput">
-                <input type="text" id="ci" placeholder="Type feedback..." onkeydown="if(event.key==='Enter')send()">
+                <input type="text" id="ci" placeholder="Type feedback..." maxlength="500" onkeydown="if(event.key==='Enter')send()">
                 <button class="csend" onclick="send()">Send</button>
             </div>
         </div>
@@ -327,22 +311,25 @@ checkAuth();
 let cF='wa',cM='defensive',cR=0,fbReady=false,db=null,allMsgs=[];
 
 // ===== FIREBASE =====
-// PASTE YOUR FIREBASE CONFIG HERE (see the "Setup Firebase" guide in the chat panel).
-// Left blank on purpose: this repo is public, so no project credentials are checked in.
-// Until it is filled, chat still works but is local to your browser session only.
+// Firebase Realtime Database - this is what lets the team see each other's posts.
+// These values are not secrets: every Firebase web app ships them in public JS.
+// What protects the data is firebase-rules.json, deployed on the database itself:
+// anyone may read the chat and append a message, nobody may edit or delete one,
+// and nothing outside punyalans/chat/messages is reachable at all.
 const fbCfg={
-    apiKey:"",
-    authDomain:"",
-    databaseURL:"",
-    projectId:"",
-    storageBucket:"",
-    messagingSenderId:"",
-    appId:""
+    apiKey:"AIzaSyBrtEeIZi65bJffnp-fmQe64dmLsVHjsCA",
+    authDomain:"punyalans-chat.firebaseapp.com",
+    databaseURL:"https://punyalans-chat-default-rtdb.firebaseio.com",
+    projectId:"punyalans-chat",
+    storageBucket:"punyalans-chat.firebasestorage.app",
+    messagingSenderId:"1021871289525",
+    appId:"1:1021871289525:web:3579b03f09fce5133fbafc"
 };
 const CHAT_PATH='punyalans/chat/messages';
 function initFB(){try{if(fbCfg.apiKey){firebase.initializeApp(fbCfg);db=firebase.database();fbReady=true;listenMsgs();document.getElementById('dbb').classList.remove('show');}else{document.getElementById('dbb').classList.add('show');}}catch(e){document.getElementById('dbb').classList.add('show');}}
 function listenMsgs(){if(!fbReady)return;db.ref(CHAT_PATH).orderByChild('timestamp').on('value',snap=>{allMsgs=[];const c=document.getElementById('msgs');c.innerHTML='';snap.forEach(ch=>{const m=ch.val();allMsgs.push(m);c.appendChild(mkMsg(m.author,m.text,m.time,'user'));});emptyState(c);scr();});}
-async function saveFB(a,t,tm){if(!fbReady)return;try{await db.ref(CHAT_PATH).push({author:a,text:t,time:tm,timestamp:Date.now()});}catch(e){}}
+async function saveFB(a,t,tm){if(!fbReady)return false;try{await db.ref(CHAT_PATH).push({author:a,text:t,time:tm,timestamp:Date.now()});return true;}catch(e){return false;}}
+function chatError(msg){const b=document.getElementById('dbb');b.textContent='⚠️ '+msg;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),5000);}
 
 // ===== CHAT =====
 let localMsgs=[];
@@ -350,28 +337,22 @@ function loadLocal(){const c=document.getElementById('msgs');c.innerHTML='';loca
 function emptyState(c){if(c.children.length===0)c.innerHTML='<div class="msgs-empty">No messages yet.<br>Post your feedback on the shape below.</div>';}
 function mkMsg(a,t,tm,tp){const e=document.createElement('div');e.className=`msg ${tp}`;e.innerHTML=`<div class="ma2">${a}</div><div>${t}</div><div class="mt">${tm}</div>`;return e;}
 function scr(){const c=document.getElementById('msgs');c.scrollTop=c.scrollHeight;}
-async function send(){const i=document.getElementById('ci'),n=document.getElementById('cn').value||'Player';if(!i.value.trim())return;const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'}),t=i.value.trim();if(fbReady){await saveFB(n,t,tm);}else{localMsgs.push({author:n,text:t,time:tm});allMsgs.push({author:n,text:t,time:tm});const c=document.getElementById('msgs');if(c.querySelector('.msgs-empty'))c.innerHTML='';c.appendChild(mkMsg(n,t,tm,'user'));scr();}i.value='';}
-
-// ===== TABS =====
-function stab(v){document.getElementById('t1').classList.toggle('active',v==='chat');document.getElementById('t2').classList.toggle('active',v==='sum');document.getElementById('msgs').classList.toggle('hid',v!=='chat');document.getElementById('sv').classList.toggle('active',v==='sum');}
-
-// ===== SUMMARY =====
-async function summarize(){
-    const b=document.getElementById('bs');b.disabled=true;b.textContent='⏳ Analyzing...';
-    const sv=document.getElementById('sv');stab('sum');
-    if(allMsgs.length===0){sv.innerHTML='<p style="opacity:.6">No feedback yet. Post messages first!</p>';b.disabled=false;b.textContent='🤖 Summarize & Suggest';return;}
-    const msgs=allMsgs.map(m=>`${m.author}: ${m.text}`).join('\n');
-    try{
-        const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`You are the tactical analyst for the Punyalans 7-a-side football team. Analyze feedback:\n1. SUMMARY: Key points\n2. POSITION SUGGESTIONS: Adjustments worth considering\n3. TACTICAL ALTERNATIVES: 1-2 alternatives keeping defensive priority\n4. ACTION ITEMS: Quick wins\n\nCurrent shapes: 3-2-1 and 2-3-1. Primary XI: GK-Anumodh, LB-Arun, CB-Sujith R, RB-Ajeeb, LM-Praveen, RM-Rithesh, ST-Ebin. Bench: Sijo (GK/DEF), Rinto (DEF/MID), Sujith Joseph (DEF), Ajeeb (MID cover), Jojan (FWD).\n\nFeedback:\n${msgs}`}]})});
-        const d=await r.json();
-        sv.innerHTML=d.content.map(i=>i.text||'').join('').replace(/\n/g,'<br>');
-    }catch(e){
-        sv.innerHTML='<p style="opacity:.6">⚠️ Summary needs an API proxy. Read the comments in the chat tab!</p>';
+function rememberName(){try{localStorage.setItem('punyalans_name',document.getElementById('cn').value);}catch(e){}}
+function restoreName(){try{const n=localStorage.getItem('punyalans_name');if(n)document.getElementById('cn').value=n;}catch(e){}}
+async function send(){
+    const i=document.getElementById('ci'),n=(document.getElementById('cn').value||'Player').trim().slice(0,40),t=i.value.trim().slice(0,500);
+    if(!t)return;
+    const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'});
+    if(fbReady){
+        i.value='';
+        // The live listener redraws the list, so nothing is appended here.
+        if(!await saveFB(n,t,tm)){i.value=t;chatError('Message not sent. Check your connection and try again.');}
+    }else{
+        localMsgs.push({author:n,text:t,time:tm});allMsgs.push({author:n,text:t,time:tm});
+        const c=document.getElementById('msgs');if(c.querySelector('.msgs-empty'))c.innerHTML='';
+        c.appendChild(mkMsg(n,t,tm,'user'));scr();i.value='';
     }
-    b.disabled=false;b.textContent='🤖 Summarize & Suggest';
 }
-
-function setupGuide(){document.getElementById('mhd').innerHTML=`<div class="pi" style="background:#ff9800">🔥</div><h2>Setup Firebase (Free)</h2><span class="pb" style="background:#ff9800">5 minutes</span>`;document.getElementById('mbd').innerHTML=`<div class="gs"><h3>Step 1: Create Project</h3><ul><li class="tp">Go to <strong>console.firebase.google.com</strong></li><li class="tp">Create project → name <strong>"punyalans"</strong></li><li class="tp">Skip analytics → Create</li></ul></div><div class="gs"><h3>Step 2: Create Database</h3><ul><li class="tp"><strong>Build → Realtime Database → Create</strong></li><li class="tp">Choose location → <strong>"Test mode"</strong></li></ul></div><div class="gs"><h3>Step 3: Get Config</h3><ul><li class="tp">⚙️ Project Settings → Your apps → <strong>Web (&lt;/&gt;)</strong></li><li class="tp">Register → copy <strong>firebaseConfig</strong></li></ul></div><div class="gs"><h3>Step 4: Paste & Upload</h3><ul><li class="tp">Open index.html → find <strong>"PASTE YOUR FIREBASE CONFIG"</strong></li><li class="tp">Replace with your config → push to GitHub</li></ul></div><div class="gs"><h3>⚠️ This repo is public</h3><ul><li class="tp">Anyone can read a config you commit here</li><li class="tp">Lock the database rules down before you go live</li></ul></div>`;document.getElementById('mov').classList.add('active');}
 
 // ===== PLAYER GUIDES =====
 const G={
@@ -688,6 +669,7 @@ function setFormation(f){
 
 // Initialize app after login
 function initApp(){
+    restoreName();
     initFB();
     if(!fbReady)loadLocal();
     setFormation('wa');

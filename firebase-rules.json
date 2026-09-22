@@ -1,0 +1,23 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "punyalans": {
+      "chat": {
+        "messages": {
+          ".read": true,
+          ".indexOn": "timestamp",
+          "$msg": {
+            ".write": "!data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['author','text','time','timestamp']) && newData.child('author').isString() && newData.child('author').val().length > 0 && newData.child('author').val().length <= 40 && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 500 && newData.child('time').isString() && newData.child('time').val().length <= 40 && newData.child('timestamp').isNumber()",
+            "author": { ".validate": true },
+            "text": { ".validate": true },
+            "time": { ".validate": true },
+            "timestamp": { ".validate": true },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    }
+  }
+}
