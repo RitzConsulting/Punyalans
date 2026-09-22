@@ -91,6 +91,30 @@ decided by `firebase-rules.json`, which is deployed on the database itself:
 Since anyone who finds the page can post, treat the chat as public. It is for
 talking about the shape, not for anything private.
 
+### GitHub will flag the API key — that is expected
+
+GitHub secret scanning raises a "Google API Key" alert on `apiKey` in `index.html`.
+It is not a leak. Firebase web apps are built to ship that value publicly: it names
+the project, it does not grant access to anything. Rotating it would publish a new
+one on the next deploy and change nothing.
+
+What was checked on this specific key, rather than assumed:
+
+| Tried with the key | Result |
+| --- | --- |
+| Delete or edit chat messages | denied — the database rules decide, not the key |
+| Create an account (Firebase Auth) | `CONFIGURATION_NOT_FOUND` — Auth is not enabled |
+| Read Firestore | 404 — no Firestore database exists |
+| Read the storage bucket | 404 — no bucket provisioned |
+| Call an unrelated Google API (Maps) | refused — the key is scoped to Firebase services |
+| Run up a bill | no billing account is attached to the project |
+
+The key is additionally restricted to referrers `ritzconsulting.github.io` and
+localhost, so it will not work from someone else's page.
+
+Close the alert as **"Won't fix"** rather than "Revoked" — the key is real and
+still in use, it is just not secret.
+
 ### Editing the rules
 
 `firebase-rules.json` is the source of truth. To change it:
