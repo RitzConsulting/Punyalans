@@ -304,8 +304,11 @@ function unlockPage() {
     initApp();
 }
 
-// Run auth check on load
-checkAuth();
+// checkAuth() is deliberately NOT called here. On a refresh sessionStorage
+// already holds the flag, so it would unlock the page while this script is
+// still being parsed - before fbCfg, P0 and the rest of the consts below exist.
+// Touching one then throws, the script stops, and the page comes up with the
+// chat offline and the buttons dead. It is called at the very bottom instead.
 
 // ===== MAIN APP =====
 let cF='wa',cM='defensive',cR=0,fbReady=false,db=null,allMsgs=[];
@@ -675,6 +678,10 @@ function initApp(){
     setFormation('wa');
     setDef();
 }
+
+// Last line of the script: every const above is initialised by now, so it is
+// safe to unlock straight away for someone who is already past the riddle.
+checkAuth();
 </script>
 </body>
 </html>
