@@ -44,10 +44,13 @@ Each shape has three rotations (Primary XI, backups, mixed), cycled with the
 ## Using the page
 
 - **🛡️ Def / ⚔️ Att** — shift everyone between the defensive and attacking shape.
-- **📍 Pass** — step through the tactical passing patterns for the current
+- **📍 Pass** — walk through the tactical passing patterns for the current
   formation (up-back-through, switch play, overlap runs, pullback and reset).
+  Each pattern runs slowly, and the pass lines stay on the pitch as the move
+  builds, so you can see where everyone went. To change the pace, edit
+  `PASS_SPEED` in `index.html` — higher is slower, `1` is the original speed.
 - **Click any player** — role guide: must do, must not, tips, and who swaps in.
-- **Team Chat** — post feedback; pinned messages carry the standing instructions.
+- **Team Chat** — post feedback on the shape. Starts empty.
 
 ## Running it
 
@@ -75,20 +78,23 @@ rules let anyone on the internet read and write your chat.
 
 ## A note on the login screen
 
-The trivia gate is obfuscation, not security. The page source and the answer hash
-are public, so treat everything in this repo as readable by anyone. Don't put
-anything private in the chat pins or the roster.
+The gate is a riddle with a one-word answer. It is obfuscation, not security:
+the page source and the answer hash are public, so treat everything in this repo
+as readable by anyone. Don't put anything private in the chat or the roster.
 
-The current answer is the team name, in lowercase. To change it, replace
-`ANSWER_HASH` in `index.html` with the SHA-256 of the new lowercase answer:
+The answer is deliberately not written down here, and the team name is kept off
+the login screen — naming the team there would have given it away.
+
+To change the riddle, edit the `login-question` text and replace `ANSWER_HASH` in
+`index.html` with the SHA-256 of the new lowercase answer:
 
 ```sh
 printf 'youranswer' | sha256sum
 ```
 
-## AI features
+## AI summary
 
-The **🤖 Rate** and **🤖 Summarize** buttons call the Anthropic API directly from
-the browser. That call has no API key and browsers block it by CORS, so both
-buttons currently fall back to a friendly message. Wiring them up needs a small
-server-side proxy that holds the key — the chat itself is unaffected.
+The **🤖 Summarize** button calls the Anthropic API directly from the browser.
+That call has no API key and browsers block it by CORS, so it currently falls
+back to a friendly message. Wiring it up needs a small server-side proxy that
+holds the key — the chat itself is unaffected.

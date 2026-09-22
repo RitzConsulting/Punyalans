@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Punyalans Tactical Plan</title>
+    <title>Tactical Plan</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         html{height:100%;overflow:hidden;}
@@ -61,7 +61,7 @@
         .gl{position:absolute;left:-6px;top:40%;width:6px;height:20%;background:white;border-radius:3px 0 0 3px;}
         .gr{position:absolute;right:-6px;top:40%;width:6px;height:20%;background:white;border-radius:0 3px 3px 0;}
 
-        .player{position:absolute;width:76px;height:76px;transform:translate(-50%,-50%);transition:all .6s ease-in-out;z-index:10;cursor:pointer;}
+        .player{position:absolute;width:76px;height:76px;transform:translate(-50%,-50%);transition:all .8s ease-in-out;z-index:10;cursor:pointer;}
         .player.hidden{opacity:0;transform:translate(-50%,-50%) scale(0);pointer-events:none;}
         .pc{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid white;box-shadow:0 3px 10px rgba(0,0,0,.4);transition:transform .3s;}
         .player:hover .pc{transform:scale(1.1);}
@@ -75,7 +75,7 @@
         .ch{position:absolute;top:-5px;right:-5px;background:#ffd54f;color:#333;width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;animation:pu 2s infinite;}
         @keyframes pu{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
-        .ball{position:absolute;width:14px;height:14px;background:radial-gradient(circle at 30% 30%,white,#ddd);border-radius:50%;transform:translate(-50%,-50%);z-index:15;box-shadow:2px 2px 4px rgba(0,0,0,.4);transition:all .4s;opacity:0;}
+        .ball{position:absolute;width:14px;height:14px;background:radial-gradient(circle at 30% 30%,white,#ddd);border-radius:50%;transform:translate(-50%,-50%);z-index:15;box-shadow:2px 2px 4px rgba(0,0,0,.4);transition:all .4s ease-in-out;opacity:0;}
         .ball.visible{opacity:1;}
         .pass-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:20;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:bold;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap;max-width:90%;letter-spacing:.5px;}
         .pass-label.visible{opacity:1;}
@@ -86,7 +86,8 @@
         .pass-label.ov{background:linear-gradient(135deg,rgba(244,67,54,.9),rgba(198,40,40,.9));color:white;}
         .psl{position:absolute;height:3px;background:linear-gradient(90deg,#ffd54f,#ffeb3b);transform-origin:left center;z-index:5;opacity:0;border-radius:2px;box-shadow:0 0 8px #ffd54f;}
         .psl.active{animation:pa .6s ease-out forwards;}
-        @keyframes pa{0%{opacity:0;width:0}50%{opacity:1}100%{opacity:0;width:100%}}
+        /* the line stays on the pitch so the whole sequence builds up in view */
+        @keyframes pa{0%{opacity:0;width:0}30%{opacity:1}100%{opacity:.8;width:100%}}
         .player.so{animation:so .4s ease-in forwards;}
         .player.si{animation:si .4s ease-out forwards;}
         @keyframes so{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-100%) scale(.5)}}
@@ -96,24 +97,8 @@
         .squad-strip span{padding:2px 5px;border-radius:6px;}
         .sg{background:rgba(67,160,71,.3);}.sd{background:rgba(30,136,229,.3);}.sm{background:rgba(255,152,0,.3);}.sf{background:rgba(229,57,53,.3);}.so2{background:rgba(158,158,158,.2);color:#9e9e9e;font-style:italic;}
 
-        /* RIGHT SIDE: CHAT + MVP stacked */
+        /* RIGHT SIDE: TEAM CHAT */
         .right-panel{width:300px;display:flex;flex-direction:column;height:100%;flex-shrink:0;border-left:1px solid rgba(255,255,255,.08);}
-
-        /* MVP PANEL */
-        .mvp-panel{height:220px;background:rgba(255,215,79,.03);border-bottom:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;flex-shrink:0;}
-        .mvp-header{padding:8px 10px;background:linear-gradient(135deg,rgba(255,215,79,.12),rgba(255,152,0,.08));font-weight:bold;font-size:14px;text-align:center;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;}
-        .mvp-refresh{padding:4px 10px;border:none;border-radius:10px;background:rgba(255,255,255,.1);color:#ffd54f;font-size:11px;cursor:pointer;font-weight:bold;}
-        .mvp-refresh:hover{background:rgba(255,255,255,.2);}
-        .mvp-content{flex:1;overflow-y:auto;padding:6px 8px;}
-        .mvp-empty{text-align:center;padding:20px 10px;font-size:13px;opacity:.5;line-height:1.5;}
-        .mvp-card{display:flex;gap:8px;padding:7px 8px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:5px;align-items:flex-start;border-left:3px solid #ffd54f;}
-        .mvp-rank{font-size:18px;font-weight:bold;min-width:24px;text-align:center;line-height:1;}
-        .mvp-rank.gold{color:#ffd54f;}.mvp-rank.silver{color:#bdbdbd;}.mvp-rank.bronze{color:#ff8a65;}
-        .mvp-info{flex:1;min-width:0;}
-        .mvp-name{font-size:12px;font-weight:bold;color:#ffd54f;}
-        .mvp-comment{font-size:11px;opacity:.8;line-height:1.3;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
-        .mvp-stars{font-size:12px;color:#ffd54f;white-space:nowrap;min-width:60px;text-align:right;}
-        .mvp-loading{text-align:center;padding:20px;font-size:12px;opacity:.5;}
 
         /* CHAT */
         .chat-panel{flex:1;display:flex;flex-direction:column;min-height:0;background:rgba(255,255,255,.02);}
@@ -128,6 +113,7 @@
         .db-banner.show{display:block;}
         .db-banner a{color:#ffd54f;}
         .msgs{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px;min-height:0;}
+        .msgs-empty{margin:auto;text-align:center;padding:20px 12px;font-size:12px;opacity:.35;line-height:1.6;}
         .msg{padding:8px 10px;border-radius:8px;font-size:14px;line-height:1.4;max-width:94%;}
         .msg.system{background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.12);align-self:flex-start;}
         .msg.user{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.12);align-self:flex-end;}
@@ -169,8 +155,7 @@
         @media(max-width:768px){
             .main-layout{flex-direction:column;}
             .right-panel{width:100%;flex-direction:row;height:auto;max-height:50vh;border-left:none;border-top:1px solid rgba(255,255,255,.08);}
-            .mvp-panel{height:auto;max-height:180px;width:50%;border-bottom:none;border-right:1px solid rgba(255,255,255,.08);}
-            .chat-panel{width:50%;}
+            .chat-panel{width:100%;}
             .field-panel{flex:1;min-height:0;}
             .player{width:50px;height:50px;}
             .pn{font-size:9px;}.pp{font-size:7px;}.ps{font-size:6px;bottom:-11px;}
@@ -183,13 +168,13 @@
 <div class="login-screen" id="loginScreen">
     <div class="login-box">
         <div class="login-logo">⚽</div>
-        <div class="login-title">PUNYALANS</div>
-        <div class="login-subtitle">Team Tactical Hub</div>
-        <div class="login-question">🤔 Trivia Question:<br><strong>What is our team called? (one word)</strong></div>
+        <div class="login-title">MATCH DAY</div>
+        <div class="login-subtitle">Solve it to come in</div>
+        <div class="login-question">🤔 Riddle:<br><strong>I have a face and two hands, but no arms or legs — and I decide when the match is over. What am I?</strong></div>
         <input type="text" class="login-input" id="loginAnswer" placeholder="Enter answer..." autocomplete="off" onkeydown="if(event.key==='Enter')checkAnswer()">
         <button class="login-btn" onclick="checkAnswer()">🔓 Enter</button>
         <div class="login-error" id="loginError">❌ Wrong answer! Try again.</div>
-        <div class="login-hint">💡 Hint: Ask a teammate if you don't know!</div>
+        <div class="login-hint">💡 Hint: one word — and it is already ticking.</div>
         <div class="login-attempts" id="loginAttempts"></div>
     </div>
 </div>
@@ -234,19 +219,8 @@
         </div>
     </div>
 
-    <!-- RIGHT: MVP + CHAT -->
+    <!-- RIGHT: TEAM CHAT -->
     <div class="right-panel">
-        <!-- MVP LEADERBOARD -->
-        <div class="mvp-panel">
-            <div class="mvp-header">
-                <span>⭐ MVP Feedback Board</span>
-                <button class="mvp-refresh" id="mvpBtn" onclick="rateFeedback()">🤖 Rate</button>
-            </div>
-            <div class="mvp-content" id="mvpContent">
-                <div class="mvp-empty">💬 Team comments will be rated here<br><br>Post feedback in chat, then hit <strong>🤖 Rate</strong> to see stars!</div>
-            </div>
-        </div>
-
         <!-- CHAT -->
         <div class="chat-panel">
             <div class="chat-header">💬 Team Chat</div>
@@ -281,10 +255,11 @@
 
 <script>
 // ===== LOGIN PROTECTION =====
-// SHA-256 hash of "punyalans" (lowercase) - the answer is case-insensitive.
+// SHA-256 hash of the riddle answer (lowercase, one word). The team name is
+// deliberately absent from the login screen, since the answer used to be it.
 // NOTE: light obfuscation only. This repo is public, so anyone can read the
 // source and the hash. Do not treat it as real security.
-const ANSWER_HASH = '54c09c89a2826904d359b81b2e0bdde51c826eb514b9c7b1e4f6c3f2bb481eb0';
+const ANSWER_HASH = 'd8198efa3604d164853468608c55efa148bc56e3564d5a30232bf98b8ab43aeb';
 let loginAttempts = 0;
 
 // SHA-256 hash function
@@ -366,51 +341,19 @@ const fbCfg={
 };
 const CHAT_PATH='punyalans/chat/messages';
 function initFB(){try{if(fbCfg.apiKey){firebase.initializeApp(fbCfg);db=firebase.database();fbReady=true;listenMsgs();document.getElementById('dbb').classList.remove('show');}else{document.getElementById('dbb').classList.add('show');}}catch(e){document.getElementById('dbb').classList.add('show');}}
-function listenMsgs(){if(!fbReady)return;db.ref(CHAT_PATH).orderByChild('timestamp').on('value',snap=>{allMsgs=[];const c=document.getElementById('msgs');c.innerHTML='';PINS.forEach(m=>c.appendChild(mkMsg(m.a,m.t,m.tm,'system')));snap.forEach(ch=>{const m=ch.val();allMsgs.push(m);c.appendChild(mkMsg(m.author,m.text,m.time,'user'));});scr();});}
+function listenMsgs(){if(!fbReady)return;db.ref(CHAT_PATH).orderByChild('timestamp').on('value',snap=>{allMsgs=[];const c=document.getElementById('msgs');c.innerHTML='';snap.forEach(ch=>{const m=ch.val();allMsgs.push(m);c.appendChild(mkMsg(m.author,m.text,m.time,'user'));});emptyState(c);scr();});}
 async function saveFB(a,t,tm){if(!fbReady)return;try{await db.ref(CHAT_PATH).push({author:a,text:t,time:tm,timestamp:Date.now()});}catch(e){}}
 
 // ===== CHAT =====
-const PINS=[
-    {a:'Ritz',t:'Welcome to Punyalans! Share feedback on formations & positions. Click players for the role guide.',tm:'Pinned'},
-    {a:'Ritz',t:'🛡️ Priority: DEFENSIVE & PASS-ORIENTED. Compact, simple passes, defend as a unit.',tm:'Pinned'},
-    {a:'Ritz',t:'🔄 Two shapes: 3-2-1 (three at the back) and 2-3-1 (extra man in midfield). 3 rotations each.',tm:'Pinned'},
-    {a:'Ritz',t:'⚠️ FITNESS: 8:45 PM sharp. Work on fitness daily 💪',tm:'Pinned'}
-];
 let localMsgs=[];
-function loadLocal(){const c=document.getElementById('msgs');c.innerHTML='';PINS.forEach(m=>c.appendChild(mkMsg(m.a,m.t,m.tm,'system')));localMsgs.forEach(m=>c.appendChild(mkMsg(m.author,m.text,m.time,'user')));scr();}
+function loadLocal(){const c=document.getElementById('msgs');c.innerHTML='';localMsgs.forEach(m=>c.appendChild(mkMsg(m.author,m.text,m.time,'user')));emptyState(c);scr();}
+function emptyState(c){if(c.children.length===0)c.innerHTML='<div class="msgs-empty">No messages yet.<br>Post your feedback on the shape below.</div>';}
 function mkMsg(a,t,tm,tp){const e=document.createElement('div');e.className=`msg ${tp}`;e.innerHTML=`<div class="ma2">${a}</div><div>${t}</div><div class="mt">${tm}</div>`;return e;}
 function scr(){const c=document.getElementById('msgs');c.scrollTop=c.scrollHeight;}
-async function send(){const i=document.getElementById('ci'),n=document.getElementById('cn').value||'Player';if(!i.value.trim())return;const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'}),t=i.value.trim();if(fbReady){await saveFB(n,t,tm);}else{localMsgs.push({author:n,text:t,time:tm});allMsgs.push({author:n,text:t,time:tm});document.getElementById('msgs').appendChild(mkMsg(n,t,tm,'user'));scr();}i.value='';}
+async function send(){const i=document.getElementById('ci'),n=document.getElementById('cn').value||'Player';if(!i.value.trim())return;const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'}),t=i.value.trim();if(fbReady){await saveFB(n,t,tm);}else{localMsgs.push({author:n,text:t,time:tm});allMsgs.push({author:n,text:t,time:tm});const c=document.getElementById('msgs');if(c.querySelector('.msgs-empty'))c.innerHTML='';c.appendChild(mkMsg(n,t,tm,'user'));scr();}i.value='';}
 
 // ===== TABS =====
 function stab(v){document.getElementById('t1').classList.toggle('active',v==='chat');document.getElementById('t2').classList.toggle('active',v==='sum');document.getElementById('msgs').classList.toggle('hid',v!=='chat');document.getElementById('sv').classList.toggle('active',v==='sum');}
-
-// ===== MVP RATING =====
-async function rateFeedback(){
-    const btn=document.getElementById('mvpBtn');btn.disabled=true;btn.textContent='⏳...';
-    const mc=document.getElementById('mvpContent');
-    if(allMsgs.length===0){mc.innerHTML='<div class="mvp-empty">No feedback yet! Post in chat first.</div>';btn.disabled=false;btn.textContent='🤖 Rate';return;}
-    const msgs=allMsgs.map((m,i)=>`${i+1}. ${m.author}: ${m.text}`).join('\n');
-    try{
-        const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`You are rating team feedback for the Punyalans 7-a-side football team. Rate each comment 1-5 stars based on: tactical insight, constructiveness, helpfulness to the team. Return ONLY a JSON array, no other text, no markdown. Format: [{"index":1,"author":"Name","comment":"short excerpt max 40 chars","stars":4,"reason":"brief 10 word reason"}]. Sort by stars descending (best first). Here are the comments:\n${msgs}`}]})});
-        const d=await r.json();
-        const txt=d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-        const rated=JSON.parse(txt);
-        renderMVP(rated);
-    }catch(e){
-        mc.innerHTML='<div class="mvp-empty">⚠️ Rating needs an API proxy.<br>Comments are still saved in chat!</div>';
-    }
-    btn.disabled=false;btn.textContent='🤖 Rate';
-}
-function renderMVP(rated){
-    const mc=document.getElementById('mvpContent');
-    if(!rated||rated.length===0){mc.innerHTML='<div class="mvp-empty">No ratings yet.</div>';return;}
-    mc.innerHTML=rated.map((r,i)=>{
-        const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
-        const stars='⭐'.repeat(r.stars||0);
-        return `<div class="mvp-row ${i===0?'top':''}"><div class="mvp-rank">${medal}</div><div class="mvp-info"><div class="mvp-name">${r.author}</div><div class="mvp-comment">${r.comment}</div><div class="mvp-reason">${r.reason||''}</div></div><div class="mvp-stars">${stars}</div></div>`;
-    }).join('');
-}
 
 // ===== SUMMARY =====
 async function summarize(){
@@ -609,6 +552,13 @@ wi: [ // 2-3-1 patterns (CM is the extra man in midfield)
 ]};
 
 let curPattern=0, passRunning=false;
+// Every beat of a passing pattern is stretched by this much, so each pass and
+// each off-ball run is slow enough to follow. Raise it to slow the walkthrough
+// down further; 1 is the original speed.
+const PASS_SPEED=2.4;
+// Each step drives its own CSS duration, so the ball and the runners finish
+// moving exactly when the step ends - at any PASS_SPEED.
+const beat=ms=>Math.round(ms*PASS_SPEED);
 // Save original positions to restore after animation
 function savePositions(){
     const saved={};
@@ -616,7 +566,12 @@ function savePositions(){
     return saved;
 }
 function restorePositions(saved){
-    Object.keys(saved).forEach(id=>{const p=document.getElementById(id);if(p){p.style.left=saved[id].left;p.style.top=saved[id].top;}});
+    // Snap back rather than drifting back over the pattern's slow timing.
+    Object.keys(saved).forEach(id=>{const p=document.getElementById(id);if(!p)return;
+        p.style.transitionDuration='0ms';
+        p.style.left=saved[id].left;p.style.top=saved[id].top;});
+    // Hand the shape shifts back to the stylesheet on the next frame.
+    requestAnimationFrame(()=>Object.keys(saved).forEach(id=>{const p=document.getElementById(id);if(p)p.style.transitionDuration='';}));
 }
 
 async function cyclePass(){
@@ -644,33 +599,40 @@ async function cyclePass(){
             const fp=document.getElementById(step.f),tp=document.getElementById(step.t);
             if(!fp||!tp||fp.classList.contains('hidden')||tp.classList.contains('hidden'))continue;
             if(step.label)lbl.textContent=step.label;
-            // Move ball
+            // Snap the ball onto the passer, then let it travel
+            b.style.transitionDuration='150ms';
             b.style.left=fp.style.left;b.style.top=fp.style.top;
-            await sl(120);
+            await sl(beat(180));
             // Draw pass line
+            const dur=beat(step.spd||350);
             const from=gC(step.f),to=gC(step.t);
             const l=document.createElement('div');l.className='psl';
             l.style.left=`${from.x}px`;l.style.top=`${from.y}px`;
             const dx=to.x-from.x,dy=to.y-from.y;
             l.style.width=`${Math.sqrt(dx*dx+dy*dy)}px`;
             l.style.transform=`rotate(${Math.atan2(dy,dx)*180/Math.PI}deg)`;
+            l.style.animationDuration=`${dur}ms`;
             c.appendChild(l);l.classList.add('active');
+            b.style.transitionDuration=`${dur}ms`;
             b.style.left=tp.style.left;b.style.top=tp.style.top;
-            await sl(step.spd||350);
+            await sl(dur);
         } else if(step.type==='move'){
             // Off-ball player movement
+            const dur=beat(step.spd||400);
             const p=document.getElementById(step.id);
             if(p&&!p.classList.contains('hidden')){
                 if(step.label)lbl.textContent=step.label;
+                p.style.transitionDuration=`${dur}ms`;
                 p.style.left=step.to.left;p.style.top=step.to.top;
             }
-            await sl(step.spd||400);
+            await sl(dur);
         }
     }
-    // Hold final position
-    await sl(1200);
+    // Hold the finished shape long enough to read it
+    await sl(beat(1800));
     // Cleanup
     b.classList.remove('visible');
+    b.style.transitionDuration='';
     lbl.classList.remove('visible');
     c.innerHTML='';
     // Restore all player positions
