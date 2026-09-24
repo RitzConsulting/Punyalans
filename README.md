@@ -51,7 +51,8 @@ Each shape has three rotations (Primary XI, backups, mixed), cycled with the
   `PASS_SPEED` in `index.html` — higher is slower, `1` is the original speed.
 - **Click any player** — role guide: must do, must not, tips, and who swaps in.
 - **Team Chat** — shared across the whole team. Put your name in the box once
-  (it is remembered) and post; everyone else sees it live, on any device.
+  (it is remembered, and required) and post; everyone else sees it live, on any
+  device.
 
 ## Running it
 

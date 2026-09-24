@@ -343,8 +343,12 @@ function scr(){const c=document.getElementById('msgs');c.scrollTop=c.scrollHeigh
 function rememberName(){try{localStorage.setItem('punyalans_name',document.getElementById('cn').value);}catch(e){}}
 function restoreName(){try{const n=localStorage.getItem('punyalans_name');if(n)document.getElementById('cn').value=n;}catch(e){}}
 async function send(){
-    const i=document.getElementById('ci'),n=(document.getElementById('cn').value||'Player').trim().slice(0,40),t=i.value.trim().slice(0,500);
+    const i=document.getElementById('ci'),nameEl=document.getElementById('cn');
+    const n=nameEl.value.trim().slice(0,40),t=i.value.trim().slice(0,500);
     if(!t)return;
+    // Two of the first posts came through as "Player" because this was left
+    // blank, and there is no way to tell afterwards who wrote them.
+    if(!n){chatError('Put your name in the box first, so the team knows who posted.');nameEl.focus();return;}
     const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date().toLocaleDateString([],{month:'short',day:'numeric'});
     if(fbReady){
         i.value='';
