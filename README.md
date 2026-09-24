@@ -120,7 +120,9 @@ still in use, it is just not secret.
 `firebase-rules.json` is the source of truth. To change it:
 
 ```sh
-curl -X PUT "https://punyalans-chat-default-rtdb.firebaseio.com/.settings/rules.json"   -H "Authorization: Bearer $(gcloud auth print-access-token)"   --data-binary @firebase-rules.json
+curl -X PUT "https://punyalans-chat-default-rtdb.firebaseio.com/.settings/rules.json" \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  --data-binary @firebase-rules.json
 ```
 
 Deleting a message needs owner rights, which the rules deliberately do not grant
@@ -144,10 +146,3 @@ To change the riddle, edit the `login-question` text and replace `ANSWER_HASH` i
 ```sh
 printf 'youranswer' | sha256sum
 ```
-
-## AI summary
-
-The **🤖 Summarize** button calls the Anthropic API directly from the browser.
-That call has no API key and browsers block it by CORS, so it currently falls
-back to a friendly message. Wiring it up needs a small server-side proxy that
-holds the key — the chat itself is unaffected.
